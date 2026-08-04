@@ -1,6 +1,10 @@
 use futures::executor::block_on;
 use log::info;
-use std::{sync::mpsc, thread};
+use std::{
+    sync::mpsc::Receiver,
+    sync::mpsc::{self, Sender},
+    thread,
+};
 use uuid::Uuid;
 
 // Using rustfs with ACID semantics
@@ -16,6 +20,12 @@ async fn main() {
     // instead of shared memory access.
     let (tx, rx) = mpsc::channel();
 
+    send(tx); // send data
+
+    receive(rx); // receive data
+}
+
+fn send(tx: Sender<String>) {
     // Spawn a thread for blocking operation
     thread::spawn(move || {
         // Simulate a blocking operation (e.g., writing to RustFS)
@@ -23,7 +33,9 @@ async fn main() {
         let data = format!("Data to write to RustFS - {:?}", Uuid::new_v4());
         tx.send(data).unwrap();
     });
+}
 
+fn receive(rx: Receiver<String>) {
     // Async operation
     let async_operation = async {
         // Wait for data from the channel
@@ -31,7 +43,6 @@ async fn main() {
         // Simulate an async operation (e.g., reading from RustFS)
         info!("Received: {:?}", received_data); // info is appropriate
     };
-
     // Execute the async operation
     block_on(async_operation);
 }
