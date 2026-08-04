@@ -5,5 +5,5 @@ RustFS (Distributed S3 Compliant Storage) - ACID (Atomicity, Consistency, Isolat
 Using channels to ensure ACID compliance by way of safe concurrency for bucket operations
 
 ## References
-[RustFS](https://rustfs.com/) - RUST-NATIVE OBJECT STORAGE - High-Performance, S3-Compatible Object Storage for AI Data Centers
-[Rust](https://rust-lang.org/) - A language empowering everyone to build reliable and efficient software
+  1. [RustFS](https://rustfs.com/) - RUST-NATIVE OBJECT STORAGE - High-Performance, S3-Compatible Object Storage for AI Data Centers
+  2. [Rust](https://rust-lang.org/) - A language empowering everyone to build reliable and efficient software
