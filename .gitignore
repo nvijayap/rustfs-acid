@@ -25,3 +25,6 @@ target
 
 # Vim
 .*.swp
+
+# dotenv
+.env
