@@ -1,3 +1,37 @@
-fn main() {
-    println!("Hello, world!");
+use futures::executor::block_on;
+use log::info;
+use std::{sync::mpsc, thread};
+use uuid::Uuid;
+
+// Using rustfs with ACID semantics
+#[tokio::main]
+async fn main() {
+    env_logger::init(); // For env_logger
+
+    // Create a channel for "safe concurrency"
+    // mpsc: MPSC in Rust stands for "Multi-Producer, Single-Consumer,"
+    // which is a type of channel used for communication between threads,
+    // allowing multiple threads to send messages to a single receiving thread.
+    // This mechanism helps ensure "safe concurrency" by enabling message passing
+    // instead of shared memory access.
+    let (tx, rx) = mpsc::channel();
+
+    // Spawn a thread for blocking operation
+    thread::spawn(move || {
+        // Simulate a blocking operation (e.g., writing to RustFS)
+        // Send data through the channel to comply with and adhere to ACID semantics
+        let data = format!("Data to write to RustFS - {:?}", Uuid::new_v4());
+        tx.send(data).unwrap();
+    });
+
+    // Async operation
+    let async_operation = async {
+        // Wait for data from the channel
+        let received_data = rx.recv().unwrap();
+        // Simulate an async operation (e.g., reading from RustFS)
+        info!("Received: {:?}", received_data); // info is appropriate
+    };
+
+    // Execute the async operation
+    block_on(async_operation);
 }
