@@ -13,7 +13,13 @@ async fn main() {
     env_logger::init(); // For env_logger
 
     let args: Vec<String> = env::args().collect();
-    println!("Number of arguments is {}", args.len());
+    let lena = args.len() - 1;
+    println!("Number of arguments is {}", lena);
+
+    if lena != 0 && lena != 2 {
+        println!("Need 2 args: <upload|download> <filename>");
+        return;
+    }
 
     // Create a channel for "safe concurrency"
     // mpsc: MPSC in Rust stands for "Multi-Producer, Single-Consumer,"
@@ -33,8 +39,8 @@ fn send(tx: Sender<String>) {
     thread::spawn(move || {
         // Simulate a blocking operation (e.g., writing to RustFS)
         // Send data through the channel to comply with and adhere to ACID semantics
-        let data = format!("Data to write to RustFS - {:?}", Uuid::new_v4());
-        info!(" Sending: {:?}", data);
+        let data = format!("{:?}", Uuid::new_v4());
+        info!("->  Sending: {:?}", data);
         tx.send(data).unwrap();
     });
 }
@@ -45,7 +51,7 @@ fn receive(rx: Receiver<String>) {
         // Wait for data from the channel
         let received_data = rx.recv().unwrap();
         // Simulate an async operation (e.g., reading from RustFS)
-        info!("Received: {:?}", received_data); // info is appropriate
+        info!("<- Received: {:?}", received_data); // info is appropriate
     };
     // Execute the async operation
     block_on(async_operation);
