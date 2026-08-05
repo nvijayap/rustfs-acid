@@ -21,6 +21,13 @@ async fn main() {
         return;
     }
 
+    if lena == 2 {
+        if args[1] != "upload" && args[1] != "download" {
+            println!("First arg is neither upload nor download");
+            return;
+        }
+    }
+
     // Create a channel for "safe concurrency"
     // mpsc: MPSC in Rust stands for "Multi-Producer, Single-Consumer,"
     // which is a type of channel used for communication between threads,
