@@ -1,7 +1,9 @@
+use dotenvy::dotenv;
 use futures::executor::block_on;
 use log::info;
 use std::{
     env, fs,
+    process::Command,
     sync::mpsc::{self, Receiver, Sender},
     thread,
 };
@@ -58,7 +60,11 @@ async fn main() {
     }
 
     send_data(tx, data); // send data
-    receive_data(rx); // receive data
+    if lena == 0 {
+        receive_data(rx); // receive data
+    } else {
+        upload_data(rx);
+    }
     println!();
 }
 
@@ -81,6 +87,37 @@ fn receive_data(rx: Receiver<String>) {
         let received_data = rx.recv().unwrap();
         // Simulate an async operation (e.g., reading from RustFS)
         info!("<- Received: {:?}", received_data); // info is appropriate
+    };
+    // Execute the async operation
+    block_on(async_operation);
+}
+
+// upload data to a bucket
+fn upload_data(rx: Receiver<String>) {
+    // Async operation
+    let async_operation = async {
+        // Wait for data from the channel
+        let received_data = rx.recv().unwrap();
+        // Simulate an async operation (e.g., reading from RustFS)
+        info!("<- Received: {:?}", received_data);
+        // upload the received data to the
+        // distributed-storage-sytem:bucket
+        // mentioned in .env
+        dotenv().ok(); // // Load environment variables from .env file
+        // Access the variables
+        let bucket = env::var("BUCKET").expect("BUCKET must be set");
+        let ds_url =
+            env::var("DISTRIBUTED_STORAGE_URL").expect("DISTRIBUTED_STORAGE_URL must be set");
+        let output = Command::new("aws")
+            .arg("s3")
+            .arg("cp")
+            .arg("file")
+            .arg("s3://".to_owned() + &bucket + "/")
+            .arg("--endpoint-url")
+            .arg(ds_url)
+            .output()
+            .expect("Failed to execute command");
+        println!("output: {:?}", output);
     };
     // Execute the async operation
     block_on(async_operation);
