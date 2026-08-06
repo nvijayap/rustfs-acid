@@ -1,7 +1,7 @@
 use futures::executor::block_on;
 use log::info;
 use std::{
-    env,
+    env, fs,
     sync::mpsc::{self, Receiver, Sender},
     thread,
 };
@@ -14,7 +14,7 @@ async fn main() {
 
     let args: Vec<String> = env::args().collect();
     let lena = args.len() - 1;
-    println!("Number of arguments is {}", lena);
+    println!("\nNumber of arguments is {}", lena);
 
     if lena != 0 && lena != 2 {
         println!("Need 2 args: <upload|download> <filename>");
@@ -23,7 +23,7 @@ async fn main() {
 
     if lena == 2 {
         if args[1] != "upload" && args[1] != "download" {
-            println!("First arg is neither upload nor download");
+            println!("\nFirst arg is neither upload nor download\n");
             return;
         }
     }
@@ -36,23 +36,33 @@ async fn main() {
     // instead of shared memory access.
     let (tx, rx) = mpsc::channel();
 
-    send(tx); // send data
+    let mut data = String::from("");
+    println!("{data}"); // to prevent the unused warning
 
-    receive(rx); // receive data
+    if lena == 0 {
+        data = format!("{:?}", Uuid::new_v4());
+    } else {
+        data = fs::read_to_string(args[2].clone()).unwrap();
+    }
+
+    send_data(tx, data); // send data
+    receive_data(rx); // receive data
+    println!();
 }
 
-fn send(tx: Sender<String>) {
+// send data
+fn send_data(tx: Sender<String>, data: String) {
     // Spawn a thread for blocking operation
     thread::spawn(move || {
         // Simulate a blocking operation (e.g., writing to RustFS)
         // Send data through the channel to comply with and adhere to ACID semantics
-        let data = format!("{:?}", Uuid::new_v4());
         info!("->  Sending: {:?}", data);
         tx.send(data).unwrap();
     });
 }
 
-fn receive(rx: Receiver<String>) {
+// receive data
+fn receive_data(rx: Receiver<String>) {
     // Async operation
     let async_operation = async {
         // Wait for data from the channel

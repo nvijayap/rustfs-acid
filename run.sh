@@ -2,6 +2,7 @@
 
 # run.sh
 
-export RUST_LOG=info
+export RUST_LOG=info; echo
 
-rustfmt --edition 2024 src/main.rs && cargo run --release -- "$@"
+rustfmt --edition 2024 src/main.rs && \
+    cargo run --release -- "$@"
