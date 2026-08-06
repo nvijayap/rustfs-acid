@@ -14,18 +14,27 @@ async fn main() {
 
     let args: Vec<String> = env::args().collect();
     let lena = args.len() - 1;
-    println!("\nNumber of arguments is {}", lena);
 
-    if lena != 0 && lena != 2 {
-        println!("Need 2 args: <upload|download> <filename>");
-        return;
-    }
-
-    if lena == 2 {
-        if args[1] != "upload" && args[1] != "download" {
-            println!("\nFirst arg is neither upload nor download\n");
+    match lena {
+        0 => {
+            println!(
+                "\n{:>12}Number of arguments is 0, so
+            just sending sample data to a channel
+            and receiving the data from the channel",
+                " "
+            );
+        }
+        1 => {
+            println!("\n{:>12}Need 0 or 2 arguments\n", " ");
             return;
         }
+        2 => {
+            if args[1] != "upload" && args[1] != "download" {
+                println!("\n{:>12}First arg is neither upload nor download\n", ' ');
+                return;
+            }
+        }
+        _ => println!(),
     }
 
     // Create a channel for "safe concurrency"
@@ -42,7 +51,10 @@ async fn main() {
     if lena == 0 {
         data = format!("{:?}", Uuid::new_v4());
     } else {
-        data = fs::read_to_string(args[2].clone()).unwrap();
+        data = fs::read_to_string(args[2].clone())
+            .unwrap()
+            .trim()
+            .to_string();
     }
 
     send_data(tx, data); // send data
