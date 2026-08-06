@@ -63,7 +63,7 @@ async fn main() {
     if lena == 0 {
         receive_data(rx); // receive data
     } else {
-        upload_data(rx);
+        upload_data(rx, args[2].clone());
     }
     println!();
 }
@@ -93,7 +93,7 @@ fn receive_data(rx: Receiver<String>) {
 }
 
 // upload data to a bucket
-fn upload_data(rx: Receiver<String>) {
+fn upload_data(rx: Receiver<String>, file: String) {
     // Async operation
     let async_operation = async {
         // Wait for data from the channel
@@ -108,10 +108,11 @@ fn upload_data(rx: Receiver<String>) {
         let bucket = env::var("BUCKET").expect("BUCKET must be set");
         let ds_url =
             env::var("DISTRIBUTED_STORAGE_URL").expect("DISTRIBUTED_STORAGE_URL must be set");
-        let output = Command::new("aws")
+        // Yes, the `aws` cli can be used against `RustFS` 🙂
+        let output = Command::new("aws") // `aws` command-line
             .arg("s3")
             .arg("cp")
-            .arg("file")
+            .arg(file)
             .arg("s3://".to_owned() + &bucket + "/")
             .arg("--endpoint-url")
             .arg(ds_url)
