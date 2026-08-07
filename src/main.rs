@@ -3,7 +3,8 @@ use futures::executor::block_on;
 use log::info;
 use std::{
     env, fs,
-    process::Command,
+    io::Write,
+    process::{Command, Stdio},
     sync::mpsc::{self, Receiver, Sender},
     thread,
 };
@@ -60,12 +61,13 @@ async fn main() {
     }
 
     send_data(tx, data); // send data
+
     if lena == 0 {
         receive_data(rx); // receive data
+        println!();
     } else {
         upload_data(rx, args[2].clone());
     }
-    println!();
 }
 
 // send data
@@ -93,7 +95,7 @@ fn receive_data(rx: Receiver<String>) {
 }
 
 // upload data to a bucket
-fn upload_data(rx: Receiver<String>, file: String) {
+fn upload_data(rx: Receiver<String>, filename: String) {
     // Async operation
     let async_operation = async {
         // Wait for data from the channel
@@ -109,16 +111,23 @@ fn upload_data(rx: Receiver<String>, file: String) {
         let ds_url =
             env::var("DISTRIBUTED_STORAGE_URL").expect("DISTRIBUTED_STORAGE_URL must be set");
         // Yes, the `aws` cli can be used against `RustFS` 🙂
-        let output = Command::new("aws") // `aws` command-line
+        print!("\nUploading data to {ds_url}/{bucket}/ ... ");
+        let mut child = Command::new("aws")
             .arg("s3")
             .arg("cp")
-            .arg(file)
-            .arg("s3://".to_owned() + &bucket + "/")
+            .arg("-")
+            .arg("s3://".to_owned() + &bucket + "/" + &filename)
             .arg("--endpoint-url")
             .arg(ds_url)
-            .output()
-            .expect("Failed to execute command");
-        println!("output: {:?}", output);
+            .stdin(Stdio::piped())
+            .spawn()
+            .expect("Failed to start command");
+        if let Some(mut stdin) = child.stdin.take() {
+            stdin
+                .write_all(&received_data.into_bytes())
+                .expect("Failed to write to stdin");
+            println!("Done\n");
+        };
     };
     // Execute the async operation
     block_on(async_operation);
