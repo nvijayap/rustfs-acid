@@ -122,6 +122,7 @@ fn upload_data(rx: Receiver<String>, filename: String) {
             .stdin(Stdio::piped())
             .spawn()
             .expect("Failed to start command");
+        // .wait(); // complains about stdin
         if let Some(mut stdin) = child.stdin.take() {
             stdin
                 .write_all(&received_data.into_bytes())
