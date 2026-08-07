@@ -115,7 +115,7 @@ fn upload_data(rx: Receiver<String>, filename: String) {
         let mut child = Command::new("aws")
             .arg("s3")
             .arg("cp")
-            .arg("-")
+            .arg("-") // stdio
             .arg("s3://".to_owned() + &bucket + "/" + &filename)
             .arg("--endpoint-url")
             .arg(ds_url)

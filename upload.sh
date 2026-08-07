@@ -8,6 +8,12 @@ printf "Content of file.txt (to be uploaded): `cat file.txt`\n"
 
 ./run.sh upload file.txt
 
-aws --endpoint http://jisnukrsna.world:9000 s3 cp s3://ey0/file.txt .
+ENDPOINT=`awk -F= '/^DISTRIBUTED_STORAGE_URL/ {print $2}' .env`
+printf "ENDPOINT: $ENDPOINT, "
+
+BUCKET=`awk -F= '/^BUCKET/ {print $2}' .env`
+printf "BUCKET: $BUCKET\n\n"
+
+aws --endpoint $ENDPOINT s3 cp s3://$BUCKET/file.txt .
 
 printf "\nContent of uploaded and retrieved file.txt: `cat file.txt`\n\n"
