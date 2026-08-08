@@ -123,6 +123,8 @@ fn upload_data(rx: Receiver<String>, filename: String) {
             .spawn()
             .expect("Failed to start command");
         // .wait(); // complains about stdin
+        // let ecode = child.wait().expect("failed to wait on child");
+        // assert!(ecode.success());
         if let Some(mut stdin) = child.stdin.take() {
             stdin
                 .write_all(&received_data.into_bytes())
